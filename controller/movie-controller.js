@@ -55,6 +55,47 @@ const addAMovie = async (req, res) => {
     return res.status(201).json({message: "Movie added..."})
 }
 
+const updateMoviePrice = async(req, res) => {
+    const {movieId, newPrice} = req.body
+    let movie
+    try{
+        movie = await Movie.findById(movieId)
+    }catch(err){
+        console.log(err)
+        return res.status(500).json(err)
+    }
+    if(!movie) return res.status(204).json({message: "movie not found"})
+    try{
+        await Movie.findByIdAndUpdate(movieId, {price: newPrice})
+    }catch(err){
+        console.log(err)
+        return res.status(500).json(err)
+    }
+    return res.status(202).json({message: "Price updated"})
+}
+
+const deleteMovie = async(req, res) => {
+    const movieId = req.body
+    let movie
+    try{
+        movie = await Movie.findById(movieId)
+    }catch(err){
+        console.log(err)
+        return res.status(500).json(err)
+    }
+    if(!movie) return res.status(204).json({message: "movie not found"})
+    let theater = movie.theater
+    try{
+        await Movie.findByIdAndDelete(movieId)
+        theater.movies.pop(movie)
+        theater.save()
+    }catch(err){
+        console.log(err)
+        return res.status(500).json(err)
+    }
+    return res.status(202).json({message: "Movie Deleted"})
+}
+
 const ifHallAlreadyExists = async (req, res) => {
     
     let name = req.body.hallName
@@ -107,4 +148,4 @@ const saveSeatsPositions = async(movie, slots, layout, res) => {
     });
 }
 
-module.exports = {listOfMovies, addAMovie}
+module.exports = {listOfMovies, addAMovie,updateMoviePrice, deleteMovie}
